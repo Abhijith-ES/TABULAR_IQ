@@ -25,3 +25,18 @@ class RegisterRequest(BaseModel):
             )
         
         return v
+    
+
+class LoginRequest(BaseModel):
+    email : EmailStr
+    password : str = Field(..., min_length=8, max_length=128)
+
+    @field_validator('password')
+    @classmethod
+    def validate_password_input(cls, v:str) -> str:
+        if not v.strip():
+            raise ValueError(
+                "Password Cannot Be Empty."
+            )
+        
+        return v
