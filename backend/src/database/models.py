@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text, Float
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -14,8 +14,8 @@ class User(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
-    datasets = relationship('Dataset', back_populates="user")
-    queries = relationship('QueryHistory', back_populates="user")
+    datasets = relationship('Dataset', back_populates="user", cascade="all, delete-orphan")
+    chats = relationship('ChatSession', back_populates="user", cascade="all, delete-orphan")
 
 
 class Dataset(Base):
@@ -28,17 +28,31 @@ class Dataset(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
     user = relationship('User', back_populates='datasets')
-    queries = relationship('QueryHistory', back_populates="dataset")
+    chats = relationship('ChatSession', back_populates="dataset")
+
+
+class ChatSession(Base):
+    __tablename__ = 'chat_sessions'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=False)
+    title = Column(String(100), default='New Chat', nullable=False)
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    user = relationship('User', back_populates="chats")
+    dataset = relationship('Dataset', back_populates="chats")
+    history = relationship('QueryHistory', back_populates="chat", cascade="all, delete-orphan")
 
 
 class QueryHistory(Base):
     __tablename__ = 'query_history'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    chat_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=False)
     query = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
+    generated_code = Column(Text, nullable=True)
+    execution_time_ms = Column(Float, nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
-    user = relationship('User', back_populates="queries")
-    dataset = relationship('Dataset', back_populates="queries")
+    chat = relationship('ChatSession', back_populates="history")
