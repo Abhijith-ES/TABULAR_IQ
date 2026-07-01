@@ -1,4 +1,4 @@
-def build_prompt(metadata: dict, user_query: str) -> str:
+def build_prompt(metadata: dict, chat_history: str, user_query: str) -> str:
     prompt = f"""
 You are an expert Python Data Analyst.
 
@@ -47,6 +47,12 @@ RULES
 7. Do NOT use SQL.
 
 8. Store the final answer inside a variable named 'result'.
+
+==========================
+RECENT CONVERSATION
+==========================
+
+{chat_history}
 
 ==========================
 USER QUESTION
