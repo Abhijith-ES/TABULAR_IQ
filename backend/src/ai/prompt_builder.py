@@ -1,4 +1,4 @@
-def build_prompt(metadata: dict, chat_history: str, user_query: str) -> str:
+def build_prompt(metadata: dict, chat_history: list[dict], user_query: str) -> str:
     prompt = f"""
 You are an expert Python Data Analyst.
 
