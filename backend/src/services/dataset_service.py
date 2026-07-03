@@ -1,6 +1,6 @@
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
-from sqlalchemy import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 import shutil
 from pathlib import Path
 import pandas as pd
