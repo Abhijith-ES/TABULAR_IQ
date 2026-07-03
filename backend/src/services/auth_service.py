@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.schemas import RegisterRequest, LoginRequest
+from src.schemas.auth_schema import RegisterRequest, LoginRequest
 from src.utils.security import hash_password, verify_password
 from src.database.models import User
 
