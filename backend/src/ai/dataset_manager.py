@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import select, SQLAlchemyError
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone
 
 from src.database.models import ChatSession, Dataset
