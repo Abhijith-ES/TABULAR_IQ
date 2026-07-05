@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -95,3 +95,59 @@ def process_query(db:Session, current_user: User, chat_id: int, user_query: str)
         raise
 
     return execution_response
+
+def get_user_chats(current_user: User, db: Session):
+    stmt = (
+        select(ChatSession)
+        .where(ChatSession.user_id==current_user.id)
+        .order_by(desc(ChatSession.updated_at))
+    )
+
+    user_chats = db.execute(stmt).scalars().all()
+
+    chat_info = []
+
+    for chat in user_chats:
+        chat_info.append(
+            {
+                "id": chat.id,
+                "title": chat.title,
+                "updated_at": chat.updated_at
+            }
+        )
+    
+    return chat_info
+
+def get_full_chat_history(current_user: User, db: Session, chat_id: int):
+    chat_stmt = (
+        select(ChatSession)
+        .where(ChatSession.id==chat_id, ChatSession.user_id==current_user.id)
+    )
+
+    current_chat = db.execute(chat_stmt).scalars().first()
+
+    if current_chat is None:
+        raise ValueError("Chat not found or access denied.")
+    
+    history_stmt = (
+        select(QueryHistory)
+        .where(QueryHistory.chat_id==current_chat.id)
+        .order_by(QueryHistory.created_at)
+    )
+
+    chat_history = db.execute(history_stmt).scalars().all()
+    
+    history_info = []
+
+    for exchanges in chat_history:
+        history_info.append(
+            {
+                "id": exchanges.id,
+                "query": exchanges.query,
+                "answer": exchanges.answer,
+                "generated_code": exchanges.generated_code,
+                "created_at": exchanges.created_at
+            }
+        )
+
+    return history_info
