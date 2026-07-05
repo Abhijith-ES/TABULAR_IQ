@@ -1,6 +1,7 @@
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select
 import shutil
 from pathlib import Path
 import pandas as pd
@@ -67,3 +68,24 @@ def upload_dataset(db: Session, current_user: User, file: UploadFile) -> Dataset
         raise
     
     return dataset
+
+def get_user_datasets(current_user: User, db: Session):
+    stmt = (
+        select(Dataset)
+        .where(Dataset.user_id==current_user.id)
+    )
+
+    datasets = db.execute(stmt).scalars().all()
+
+    dataset_info = []
+
+    for dataset in datasets:
+        dataset_info.append(
+            {
+                "id": dataset.id,
+                "name": dataset.file_name,
+                "uploaded_at": dataset.uploaded_at
+            }
+        )
+    
+    return dataset_info
