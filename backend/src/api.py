@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from src.routes import auth
 from src.routes import chat
+from src.routes import dataset
 
 app = FastAPI()
 
@@ -18,3 +19,4 @@ def health_check():
 
 app.include_router(auth.router)
 app.include_router(chat.router)
+app.include_router(dataset.router)
