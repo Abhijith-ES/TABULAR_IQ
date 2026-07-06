@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class CreateChatRequest(BaseModel):
-    dataset_id : int
+    dataset_id : int = Field(gt=0)
 
 
 class CreateChatResponse(BaseModel):
