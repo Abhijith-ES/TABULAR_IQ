@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter, Depends
+from fastapi import HTTPException, APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
@@ -16,7 +16,8 @@ from src.services.chat_service import (
     process_query,
     get_full_chat_history,
     get_user_chats,
-    rename_chat
+    rename_chat,
+    delete_chat
 )
 
 
@@ -52,8 +53,9 @@ def create_new_chat(
     
 @router.post('/{chat_id}/query')
 def process_user_query(
-    chat_id: int,
+    *,
     user_query: QueryRequest,
+    chat_id: int = Path(gt=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     ):
@@ -87,7 +89,7 @@ def user_chats(current_user: User = Depends(get_current_user), db: Session = Dep
         )
     
 @router.get("/{chat_id}/history")
-def get_chat_history(chat_id: int,
+def get_chat_history(chat_id: int = Path(gt=0),
                      current_user: User = Depends(get_current_user),
                      db: Session = Depends(get_db)):
     try:
@@ -106,7 +108,8 @@ def get_chat_history(chat_id: int,
         )
     
 @router.patch("/{chat_id}", response_model=RenameResponse)
-def rename_current_chat(chat_id: int, 
+def rename_current_chat(*,
+                        chat_id: int = Path(gt=0), 
                         request: RenameRequest,
                         current_user = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -122,6 +125,26 @@ def rename_current_chat(chat_id: int,
             id=chat.id,
             title=chat.title
             )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+    
+@router.delete("/{chat_id}")
+def delete_user_chat(chat_id: int = Path(gt=0),
+                     current_user: User = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    
+    try:
+        delete_chat(current_user=current_user,
+                    db=db,
+                    chat_id=chat_id)
+        
+        return {
+            "message": "Chat deleted successfully."
+        }
+    
     except ValueError as e:
         raise HTTPException(
             status_code=404,
