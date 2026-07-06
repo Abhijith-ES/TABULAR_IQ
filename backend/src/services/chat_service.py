@@ -151,3 +151,27 @@ def get_full_chat_history(current_user: User, db: Session, chat_id: int):
         )
 
     return history_info
+
+def rename_chat(current_user: User, db: Session, chat_id: int, title: str):
+    stmt = (
+        select(ChatSession)
+        .where(ChatSession.id==chat_id,
+               ChatSession.user_id==current_user.id)
+    )
+
+    current_chat = db.execute(stmt).scalars().first()
+
+    if current_chat is None:
+        raise ValueError("Chat does not exist!")
+    
+    current_chat.title = title
+
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+    db.refresh(current_chat)
+
+    return current_chat
