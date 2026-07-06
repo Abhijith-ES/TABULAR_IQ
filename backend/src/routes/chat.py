@@ -3,9 +3,21 @@ from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.dependencies.auth import get_current_user
-from src.services.chat_service import create_chat, process_query, get_full_chat_history, get_user_chats
-from src.schemas.chat_schema import CreateChatRequest, CreateChatResponse, QueryRequest
+from src.schemas.chat_schema import (
+    CreateChatRequest,
+    CreateChatResponse,
+    QueryRequest,
+    RenameRequest,
+    RenameResponse
+)
 from src.database.models import User
+from src.services.chat_service import (
+    create_chat,
+    process_query,
+    get_full_chat_history,
+    get_user_chats,
+    rename_chat
+)
 
 
 router = APIRouter(
@@ -90,5 +102,28 @@ def get_chat_history(chat_id: int,
     except ValueError as e:
         raise HTTPException(
             status_code=403,
+            detail=str(e)
+        )
+    
+@router.patch("/{chat_id}", response_model=RenameResponse)
+def rename_current_chat(chat_id: int, 
+                        request: RenameRequest,
+                        current_user = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    try:
+        chat = rename_chat(
+            current_user=current_user,
+            db=db,
+            chat_id=chat_id,
+            title=request.title
+            )
+        
+        return RenameResponse(
+            id=chat.id,
+            title=chat.title
+            )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
             detail=str(e)
         )
