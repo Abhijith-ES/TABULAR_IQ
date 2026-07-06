@@ -175,3 +175,22 @@ def rename_chat(current_user: User, db: Session, chat_id: int, title: str):
     db.refresh(current_chat)
 
     return current_chat
+
+def delete_chat(current_user: User, db: Session, chat_id: int):
+    stmt = (
+        select(ChatSession)
+        .where(ChatSession.id==chat_id,
+               ChatSession.user_id==current_user.id)
+    )
+
+    chat = db.execute(stmt).scalars().first()
+
+    if chat is None:
+        raise ValueError("Chat does not exist.")
+    
+    try:
+        db.delete(chat)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
