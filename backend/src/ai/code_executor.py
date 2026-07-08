@@ -10,7 +10,8 @@ def execute_code(code: str, df: pd.DataFrame) -> dict:
             "min": min,
             "max": max,
             "abs": abs,
-            "round": round
+            "round": round,
+            "len": len
             },
         "pd": pd,
         "np": np,
